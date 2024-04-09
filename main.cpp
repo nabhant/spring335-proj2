@@ -2,7 +2,6 @@
 #include "myList.hpp"
 #include "myHeap.hpp"
 #include "myAVLtree.hpp"
-
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -46,7 +45,6 @@ int main(int argc, char* argv[]) {
    
     vectorMedian(&instructions);
     std::cout<<std::endl;
-    
     std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
     listMedian(&instructions);
     std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;

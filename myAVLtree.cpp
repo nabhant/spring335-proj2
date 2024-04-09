@@ -1,4 +1,4 @@
-#include "myAVLTree.hpp"
+#include "myAVLtree.hpp"
 #include <vector>
 #include <iostream>
 
