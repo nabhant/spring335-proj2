@@ -3,7 +3,7 @@
 // #include <iostream>
 
 
-// void AvlTree::treeMedian(const std::vector<int>* instructions) {
+// void AvlTree::treeMedian(const std::vector<int>* instructions){
 //     AvlTree small;
 //     AvlTree large;
 
@@ -11,54 +11,46 @@
 
 //     auto start = std::chrono::high_resolution_clock::now();
 
-//     int small_size = 0, large_size = 0;
+//     int smaller = 0, larger = 0;
 
-//     for (auto it = instructions->begin(); it != instructions->end(); ++it)
-//     {
-//         if (*it != -1)
-//         {
-//             if (small.isEmpty() || *it <= small.findMax())
-//             {
+//     for (auto it = instructions->begin(); it != instructions->end(); ++it){
+//         if (*it != -1){
+//             if (small.isEmpty() || *it <= small.findMax()){
 //                 small.insert(*it);
-//                 small_size++;
+//                 smaller++;
 //             }
-//             else
-//             {
+//             else{
 //                 large.insert(*it);
-//                 large_size++;
+//                 larger++;
 //             }
 
-//             while (small_size > large_size + 1)
-//             {
+//             while (smaller > larger + 1){
 //                 large.insert(small.findMax());
-//                 large_size++;
+//                 larger++;
 
 //                 small.remove(small.findMax());
-//                 small_size--;
+//                 smaller--;
 //             }
 
-//             while (large_size > small_size)
-//             {
+//             while (larger > smaller){
 //                 small.insert(large.findMin());
-//                 small_size++;
+//                 smaller++;
 
 //                 large.remove(large.findMin());
-//                 large_size--;
+//                 larger--;
 //             }
 //         }
-//         else
-//         {
+//         else{
 //             medians.push_back(small.findMax());
 //             small.remove(small.findMax());
-//             small_size--;
+//             smaller--;
 
-//             while (small_size < large_size)
-//             {
+//             while (smaller < larger){
 //                 small.insert(large.findMin());
-//                 small_size++;
+//                 smaller++;
 
 //                 large.remove(large.findMin());
-//                 large_size--;
+//                 larger--;
 //             }
 //         }
 //     }
@@ -66,8 +58,7 @@
 //     auto end = std::chrono::high_resolution_clock::now();
 //     std::chrono::duration<double, std::milli> duration = end - start;
 
-//     for (int median : medians)
-//     {
+//     for (int median : medians){
 //         std::cout << median << " ";
 //     }
 //     std::cout << "\n";
