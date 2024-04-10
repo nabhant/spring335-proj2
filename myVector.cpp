@@ -1,51 +1,40 @@
 #include "myVector.hpp"
 
-// void vectorMedian (const std::vector<int> * instructions){
-//     std::vector<int> result;
-//     int current_Median; 
-//     for (int instr: *instructions){
-//         if (instr >= 0){
-
-//             // INSERT
-//             auto it = std::lower_bound(result.begin(), result.end(), instr);
-//             result.insert(it, instr);
-//         } 
-        
-//         else{
-
-//             //POP MEDIAN
-//             if(!result.empty()){
-//                 size_t medianIndex = (result.size() - 1 ) / 2;
-//                 result.erase(result.begin() + medianIndex);
-//             }
-//         }
-//     }
-
-//      for (int median : result) {
-//         std::cout << median << " ";
-//     }
-//     std::cout << std::endl;
-// }
-
 void vectorMedian(const std::vector<int>* instructions) {
-    std::vector<int> data; // Vector to keep the elements sorted
-    std::vector<int> medians; // Vector to store medians before printing
+    std::vector<int> data; // Initializes a vector to keep elements in sorted order
+    std::vector<int> medians; // Initializes a vector to store medians before printing
     
+    // Iterate over each instruction in the provided vector
     for (const int instr : *instructions) {
         if (instr >= 0) {
-            // Insert operation using iterators
+            // If the instruction is a non-negative integer, treat it as an insert operation
+            
+            // Use std::lower_bound to find the correct position in the sorted vector for the new element
+            // This maintains the sorted order efficiently
             std::vector<int>::iterator it = std::lower_bound(data.begin(), data.end(), instr);
+            // Insert the new element at the position returned by std::lower_bound
             data.insert(it, instr);
-        } else {
-            // Pop median operation
+        } else {    // If the instruction is negative, treat it as a request to pop and print the median
+            
+            // Ensure the vector is not empty before attempting to find and remove the median
             if (!data.empty()) {
-                std::vector<int>::size_type medianIndex = (data.size() - 1) / 2; // Handle both even and odd sizes
+                // Calculate the index of the median element
+                // For an even number of elements, this results in the lower median
+                std::vector<int>::size_type medianIndex = (data.size() - 1) / 2;
+                // Use the calculated index to find the iterator to the median element
                 std::vector<int>::iterator medianIt = data.begin() + medianIndex;
-                medians.push_back(*medianIt); // Save median for later printing
-                data.erase(medianIt); // Remove median from data
+                // Store the median value in the 'medians' vector for later printing
+                medians.push_back(*medianIt);
+                // Remove the median element from 'data'
+                data.erase(medianIt);
             }
         }
     }
+
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double, std::milli> duration = end - start;
+    
+    // std::cout << "Vector duration: " << duration.count() << "ms\n";
 
     // Print out the medians after completing all operations
     for (int median : medians) {
