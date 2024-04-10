@@ -2,7 +2,8 @@
 #include <vector>
 #include <iostream>
 
-void treeMedian(const std::vector<int>* instructions) {
+
+void AvlTree::treeMedian(const std::vector<int>* instructions) {
     AvlTree small;
     AvlTree large;
 
@@ -16,7 +17,7 @@ void treeMedian(const std::vector<int>* instructions) {
     {
         if (*it != -1)
         {
-            if (small.isEmpty() || *it <= small.getMaximum())
+            if (small.isEmpty() || *it <= small.findMax())
             {
                 small.insert(*it);
                 small_size++;
@@ -29,34 +30,34 @@ void treeMedian(const std::vector<int>* instructions) {
 
             while (small_size > large_size + 1)
             {
-                large.insert(small.getMaximum());
+                large.insert(small.findMax());
                 large_size++;
 
-                small.remove(small.getMaximum());
+                small.remove(small.findMax());
                 small_size--;
             }
 
             while (large_size > small_size)
             {
-                small.insert(large.getMinimum());
+                small.insert(large.findMin());
                 small_size++;
 
-                large.remove(large.getMinimum());
+                large.remove(large.findMin());
                 large_size--;
             }
         }
         else
         {
-            medians.push_back(small.getMaximum());
-            small.remove(small.getMaximum());
+            medians.push_back(small.findMax());
+            small.remove(small.findMax());
             small_size--;
 
             while (small_size < large_size)
             {
-                small.insert(large.getMinimum());
+                small.insert(large.findMin());
                 small_size++;
 
-                large.remove(large.getMinimum());
+                large.remove(large.findMin());
                 large_size--;
             }
         }
