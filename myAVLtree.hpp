@@ -5,120 +5,129 @@
 #include <chrono>
 #include <iostream>
 #include <vector>
+#include <stdexcept>
 
-template<typename T>
-class AvlTree {
+
+// Textbook implementation of an AVL Tree + modifications
+// Definition of an AVL Tree class
+class AVLTree {
 private:
+    // Internal structure for tree nodes
     struct Node {
-        T key;
-        int height;
-        Node *left;
-        Node *right;
+        int value;      // Value stored in the node
+        Node *l;        // Pointer to the left child
+        Node *r;        // Pointer to the right child
+        int height;     // Height of the node
 
-        Node(T k) : key(k), height(1), left(nullptr), right(nullptr) {}
+        // Constructor for creating a new node with a given value
+        Node(const int &value) : value(value), l(nullptr), r(nullptr), height(1) {}
     };
 
-    Node *root;
+    Node *root;       // Root node of the AVL tree
+    int treeSize;     // Number of nodes in the tree
 
+    // Utility function to get the height of a node
     int getHeight(Node *node) {
         if (node == nullptr)
             return 0;
         return node->height;
     }
 
-    int getBalanceFactor(Node *node) {
+    // Computes the height difference between the left and right children of a node
+    int getHeightDiff(Node *node) {
         if (node == nullptr)
             return 0;
-        return getHeight(node->left) - getHeight(node->right);
+        return getHeight(node->l) - getHeight(node->r);
     }
 
+    // Updates the height of a node based on the heights of its children
     void updateHeight(Node *node) {
-        node->height = 1 + std::max(getHeight(node->left), getHeight(node->right));
+        node->height = std::max(getHeight(node->l), getHeight(node->r)) + 1;
     }
 
-    Node *rotateRight(Node *y) {
-        Node *x = y->left;
-        Node *T2 = x->right;
+    // Performs a left rotation around a given node and returns the new root
+    Node *rotateLeft(Node *node) {
+        Node *newRoot = node->r;
+        node->r = newRoot->l;
+        newRoot->l = node;
 
-        x->right = y;
-        y->left = T2;
+        updateHeight(node);
+        updateHeight(newRoot);
 
-        updateHeight(y);
-        updateHeight(x);
-
-        return x;
+        return newRoot;
     }
 
-    Node *rotateLeft(Node *x) {
-        Node *y = x->right;
-        Node *T2 = y->left;
+    // Performs a right rotation around a given node and returns the new root
+    Node *rotateRight(Node *node) {
+        Node *newRoot = node->l;
+        node->l = newRoot->r;
+        newRoot->r = node;
 
-        y->left = x;
-        x->right = T2;
+        updateHeight(node);
+        updateHeight(newRoot);
 
-        updateHeight(x);
-        updateHeight(y);
-
-        return y;
+        return newRoot;
     }
 
-    Node *insertUtil(Node *node, T key) {
-        if (node == nullptr)
-            return new Node(key);
+    // Helper function to insert a new value into the subtree rooted at a given node
+    Node *insertHelper(Node *node, const int &value) {
+        if (node == nullptr) {
+            treeSize++;
+            return new Node(value);
+        }
 
-        if (key < node->key)
-            node->left = insertUtil(node->left, key);
-        else if (key > node->key)
-            node->right = insertUtil(node->right, key);
-        else
-            return node;
+        if (value <= node->value) {
+            node->l = insertHelper(node->l, value);
+        } else {
+            node->r = insertHelper(node->r, value);
+        }
 
         updateHeight(node);
 
-        int balance = getBalanceFactor(node);
-
-        if (balance > 1 && key < node->left->key)
-            return rotateRight(node);
-
-        if (balance < -1 && key > node->right->key)
-            return rotateLeft(node);
-
-        if (balance > 1 && key > node->left->key) {
-            node->left = rotateLeft(node->left);
+        // Balancing the tree
+        int balanceFactor = getHeightDiff(node);
+        if (balanceFactor > 1) {
+            if (getHeightDiff(node->l) < 0) {
+                node->l = rotateLeft(node->l);
+            }
             return rotateRight(node);
         }
-
-        if (balance < -1 && key < node->right->key) {
-            node->right = rotateRight(node->right);
+        if (balanceFactor < -1) {
+            if (getHeightDiff(node->r) > 0) {
+                node->r = rotateRight(node->r);
+            }
             return rotateLeft(node);
         }
 
         return node;
     }
 
-    Node *removeUtil(Node *node, T key) {
+    // Helper function to remove a value from the subtree rooted at a given node
+    Node *removeHelper(Node *node, const int &value) {
         if (node == nullptr)
             return nullptr;
 
-        if (key < node->key)
-            node->left = removeUtil(node->left, key);
-        else if (key > node->key)
-            node->right = removeUtil(node->right, key);
-        else {
-            if (node->left == nullptr || node->right == nullptr) {
-                Node *temp = node->left ? node->left : node->right;
-
+        if (value < node->value) {
+            node->l = removeHelper(node->l, value);
+        } else if (value > node->value) {
+            node->r = removeHelper(node->r, value);
+        } else {
+            // Node with only one child or no child
+            if (node->l == nullptr || node->r == nullptr) {
+                Node *temp = (node->l != nullptr) ? node->l : node->r;
                 if (temp == nullptr) {
                     temp = node;
                     node = nullptr;
-                } else
+                } else {
                     *node = *temp;
-
+                }
                 delete temp;
+                treeSize--;
             } else {
-                Node *temp = findMinUtil(node->right);
-                node->key = temp->key;
-                node->right = removeUtil(node->right, temp->key);
+                // Node with two children: Get the inorder successor (smallest in the right subtree)
+                Node *temp = min(node->r);
+                node->value = temp->value;
+                node->r = removeHelper(node->r, temp->value);
             }
         }
 
@@ -127,84 +136,80 @@ private:
 
         updateHeight(node);
 
-        int balance = getBalanceFactor(node);
-
-        if (balance > 1 && getBalanceFactor(node->left) >= 0)
-            return rotateRight(node);
-
-        if (balance > 1 && getBalanceFactor(node->left) < 0) {
-            node->left = rotateLeft(node->left);
+        // Balancing the tree
+        int balanceFactor = getHeightDiff(node);
+        if (balanceFactor > 1) {
+            if (getHeightDiff(node->l) < 0) {
+                node->l = rotateLeft(node->l);
+            }
             return rotateRight(node);
         }
-
-        if (balance < -1 && getBalanceFactor(node->right) <= 0)
-            return rotateLeft(node);
-
-        if (balance < -1 && getBalanceFactor(node->right) > 0) {
-            node->right = rotateRight(node->right);
+        if (balanceFactor < -1) {
+            if (getHeightDiff(node->r) > 0) {
+                node->r = rotateRight(node->r);
+            }
             return rotateLeft(node);
         }
 
         return node;
     }
 
-    Node *findMinUtil(Node *node) {
-        if (node == nullptr)
-            return nullptr;
-        if (node->left == nullptr)
+    // Finds the node with the minimum value in the subtree rooted at a given node
+    Node *min(Node *node) {
+        if (node == nullptr || node->l == nullptr)
             return node;
-        return findMinUtil(node->left);
+        return min(node->l);
     }
 
-    Node *findMaxUtil(Node *node) {
-        if (node == nullptr)
-            return nullptr;
-        if (node->right == nullptr)
+    // Finds the node with the maximum value in the subtree rooted at a given node
+    Node *max(Node *node) {
+        if (node == nullptr || node->r == nullptr)
             return node;
-        return findMaxUtil(node->right);
-    }
-
-    int sizeUtil(Node *node) {
-        if (node == nullptr)
-            return 0;
-        return 1 + sizeUtil(node->left) + sizeUtil(node->right);
+        return max(node->r);
     }
 
 public:
-    AvlTree() : root(nullptr) {}
+    // Constructor initializes an empty AVL tree
+    AVLTree() : root(nullptr), treeSize(0) {}
 
-    void insert(T key) {
-        root = insertUtil(root, key);
+    // Inserts a new value into the AVL tree
+    void insert(const int &value) {
+        root = insertHelper(root, value);
     }
 
-    void remove(T key) {
-        root = removeUtil(root, key);
+    // Removes a value from the AVL tree, if it exists
+    void remove(const int &value) {
+        root = removeHelper(root, value);
     }
 
-    T findMin() {
-        Node *minNode = findMinUtil(root);
+    // Finds and returns the minimum value in the AVL tree
+    int findMin() {
+        Node *minNode = min(root);
         if (minNode == nullptr)
-            throw stdruntime_error("Tree is empty");
-        return minNode->key;
+            throw std::runtime_error("Tree is empty");
+        return minNode->value;
     }
 
-    T findMax() {
-        Node *maxNode = findMaxUtil(root);
+    // Finds and returns the maximum value in the AVL tree
+    int findMax() {
+        Node *maxNode = max(root);
         if (maxNode == nullptr)
-            throw stdruntime_error("Tree is empty");
-        return maxNode->key;
+            throw std::runtime_error("Tree is empty");
+        return maxNode->value;
     }
 
+    // Checks if the AVL tree is empty
     bool isEmpty() {
         return root == nullptr;
     }
 
+    // Returns the number of nodes in the AVL tree
     int size() {
-        return sizeUtil(root);
+        return treeSize;
     }
 
     void treeMedian(const std::vector<int> *instructions);
 };
 
 
-#endif  // MYAVLTREE_HPP
+#endif // MYAVLTREE_HPP
