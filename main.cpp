@@ -43,13 +43,13 @@ int main(int argc, char* argv[]) {
     }
 
    
-    vectorMedian(&instructions);
-    std::cout<<std::endl;
-    std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
-    listMedian(&instructions);
-    std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
-    heapMedian(&instructions);
-    std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
+    // vectorMedian(&instructions);
+    // std::cout<<std::endl;
+    // std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
+    // listMedian(&instructions);
+    // std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
+    // heapMedian(&instructions);
+    // std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
     listMedian(&instructions);
     return 0;
 }
