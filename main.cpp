@@ -1,6 +1,7 @@
 #include "myVector.hpp"
 #include "myList.hpp"
 #include "myHeap.hpp"
+#include "myAVLtree.hpp"
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -49,6 +50,6 @@ int main(int argc, char* argv[]) {
     std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
     heapMedian(&instructions);
     std::cout<<"-------------------------------------------------"<<"\n"<<"\n"<<"\n"<<std::endl;
-
+    listMedian(&instructions);
     return 0;
 }
