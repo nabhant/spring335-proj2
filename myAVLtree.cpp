@@ -8,7 +8,7 @@ void treeMedian(const std::vector<int> *instructions) {
     // Vector to store the medians after each removal instruction (-1)
     std::vector<int> medians;
 
-    auto start = std::chrono::high_resolution_clock::now();
+    // auto start = std::chrono::high_resolution_clock::now();
 
     // Iterate over each instruction in the input vector
     for (int instr : *instructions) {
@@ -53,9 +53,9 @@ void treeMedian(const std::vector<int> *instructions) {
         }
     }
 
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double, std::milli> duration = end - start;
-    std::cout << "Tree duration: " << duration.count() << "ms\n";
+    // auto end = std::chrono::high_resolution_clock::now();
+    // std::chrono::duration<double, std::milli> duration = end - start;
+    // std::cout << "Tree duration: " << duration.count() << "ms\n";
     for (int median : medians) {
         std::cout << median << " ";
     }
