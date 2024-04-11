@@ -6,177 +6,205 @@
 #include <iostream>
 #include <vector>
 
-template <typename T>
+template<typename T>
 class AvlTree {
 private:
-    struct AvlNode {
-        T element;
-        AvlNode *left;
-        AvlNode *right;
+    struct Node {
+        T key;
         int height;
+        Node *left;
+        Node *right;
 
-        AvlNode(const T& ele, AvlNode *lt = nullptr, AvlNode *rt = nullptr, int h = 0)
-            : element(ele), left(lt), right(rt), height(h) {}
+        Node(T k) : key(k), height(1), left(nullptr), right(nullptr) {}
     };
 
-    AvlNode *root;
+    Node *root;
+
+    int getHeight(Node *node) {
+        if (node == nullptr)
+            return 0;
+        return node->height;
+    }
+
+    int getBalanceFactor(Node *node) {
+        if (node == nullptr)
+            return 0;
+        return getHeight(node->left) - getHeight(node->right);
+    }
+
+    void updateHeight(Node *node) {
+        node->height = 1 + std::max(getHeight(node->left), getHeight(node->right));
+    }
+
+    Node *rotateRight(Node *y) {
+        Node *x = y->left;
+        Node *T2 = x->right;
+
+        x->right = y;
+        y->left = T2;
+
+        updateHeight(y);
+        updateHeight(x);
+
+        return x;
+    }
+
+    Node *rotateLeft(Node *x) {
+        Node *y = x->right;
+        Node *T2 = y->left;
+
+        y->left = x;
+        x->right = T2;
+
+        updateHeight(x);
+        updateHeight(y);
+
+        return y;
+    }
+
+    Node *insertUtil(Node *node, T key) {
+        if (node == nullptr)
+            return new Node(key);
+
+        if (key < node->key)
+            node->left = insertUtil(node->left, key);
+        else if (key > node->key)
+            node->right = insertUtil(node->right, key);
+        else
+            return node;
+
+        updateHeight(node);
+
+        int balance = getBalanceFactor(node);
+
+        if (balance > 1 && key < node->left->key)
+            return rotateRight(node);
+
+        if (balance < -1 && key > node->right->key)
+            return rotateLeft(node);
+
+        if (balance > 1 && key > node->left->key) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+
+        if (balance < -1 && key < node->right->key) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    Node *removeUtil(Node *node, T key) {
+        if (node == nullptr)
+            return nullptr;
+
+        if (key < node->key)
+            node->left = removeUtil(node->left, key);
+        else if (key > node->key)
+            node->right = removeUtil(node->right, key);
+        else {
+            if (node->left == nullptr || node->right == nullptr) {
+                Node *temp = node->left ? node->left : node->right;
+
+                if (temp == nullptr) {
+                    temp = node;
+                    node = nullptr;
+                } else
+                    *node = *temp;
+
+                delete temp;
+            } else {
+                Node *temp = findMinUtil(node->right);
+                node->key = temp->key;
+                node->right = removeUtil(node->right, temp->key);
+            }
+        }
+
+        if (node == nullptr)
+            return nullptr;
+
+        updateHeight(node);
+
+        int balance = getBalanceFactor(node);
+
+        if (balance > 1 && getBalanceFactor(node->left) >= 0)
+            return rotateRight(node);
+
+        if (balance > 1 && getBalanceFactor(node->left) < 0) {
+            node->left = rotateLeft(node->left);
+            return rotateRight(node);
+        }
+
+        if (balance < -1 && getBalanceFactor(node->right) <= 0)
+            return rotateLeft(node);
+
+        if (balance < -1 && getBalanceFactor(node->right) > 0) {
+            node->right = rotateRight(node->right);
+            return rotateLeft(node);
+        }
+
+        return node;
+    }
+
+    Node *findMinUtil(Node *node) {
+        if (node == nullptr)
+            return nullptr;
+        if (node->left == nullptr)
+            return node;
+        return findMinUtil(node->left);
+    }
+
+    Node *findMaxUtil(Node *node) {
+        if (node == nullptr)
+            return nullptr;
+        if (node->right == nullptr)
+            return node;
+        return findMaxUtil(node->right);
+    }
+
+    int sizeUtil(Node *node) {
+        if (node == nullptr)
+            return 0;
+        return 1 + sizeUtil(node->left) + sizeUtil(node->right);
+    }
 
 public:
     AvlTree() : root(nullptr) {}
 
-    ~AvlTree() {
-        makeEmpty(root);
+    void insert(T key) {
+        root = insertUtil(root, key);
     }
 
-    bool isEmpty() const {
+    void remove(T key) {
+        root = removeUtil(root, key);
+    }
+
+    T findMin() {
+        Node *minNode = findMinUtil(root);
+        if (minNode == nullptr)
+            throw stdruntime_error("Tree is empty");
+        return minNode->key;
+    }
+
+    T findMax() {
+        Node *maxNode = findMaxUtil(root);
+        if (maxNode == nullptr)
+            throw stdruntime_error("Tree is empty");
+        return maxNode->key;
+    }
+
+    bool isEmpty() {
         return root == nullptr;
     }
 
-    const T& findMin() const {
-        return findMin(root)->element;
-    }
-
-    const T& findMax() const {
-        return findMax(root)->element;
-    }
-
-    void insert(const T& x) {
-        insert(x, root);
-    }
-
-    void remove(const T& x) {
-        remove(x, root);
-    }
-
-    int size() const {
-        return getSize(root);
+    int size() {
+        return sizeUtil(root);
     }
 
     void treeMedian(const std::vector<int> *instructions);
-
-private:
-    void insert(const T& x, AvlNode*& t) {
-        if (t == nullptr)
-            t = new AvlNode(x, nullptr, nullptr);
-        else if (x < t->element) {
-            insert(x, t->left);
-            if (height(t->left) - height(t->right) == 2)
-                if (x < t->left->element)
-                    rotateWithLeftChild(t);
-                else
-                    doubleWithLeftChild(t);
-        } else if (t->element < x) {
-            insert(x, t->right);
-            if (height(t->right) - height(t->left) == 2)
-                if (t->right->element < x)
-                    rotateWithRightChild(t);
-                else
-                    doubleWithRightChild(t);
-        }
-
-
-        t->height = std::max(height(t->left), height(t->right)) + 1;
-    }
-
-    void remove(const T& x, AvlNode*& t) {
-        if (t == nullptr) return;
-
-        if (x < t->element) {
-            remove(x, t->left);
-        } else if (t->element < x) {
-            remove(x, t->right);
-        } else if (t->left != nullptr && t->right != nullptr) { 
-            t->element = findMin(t->right)->element;
-            remove(t->element, t->right);
-        } else {
-            AvlNode* oldNode = t;
-            t = (t->left != nullptr) ? t->left : t->right;
-            delete oldNode;
-        }
-
-        balance(t);
-    }
-
-    void balance(AvlNode*& t) {
-        if (t == nullptr) return;
-
-        if (height(t->left) - height(t->right) > 1) {
-            if (height(t->left->left) >= height(t->left->right))
-                rotateWithLeftChild(t);
-            else
-                doubleWithLeftChild(t);
-        } else if (height(t->right) - height(t->left) > 1) {
-            if (height(t->right->right) >= height(t->right->left))
-                rotateWithRightChild(t);
-            else
-                doubleWithRightChild(t);
-        }
-
-        t->height = std::max(height(t->left), height(t->right)) + 1;
-    }
-
-    static const int ALLOWED_IMBALANCE = 1;
-
-    void rotateWithLeftChild(AvlNode*& k2) {
-        AvlNode* k1 = k2->left;
-        k2->left = k1->right;
-        k1->right = k2;
-        k2->height = std::max(height(k2->left), height(k2->right)) + 1;
-        k1->height = std::max(height(k1->left), k2->height) + 1;
-        k2 = k1;
-    }
-
-    void rotateWithRightChild(AvlNode*& k1) {
-        AvlNode* k2 = k1->right;
-        k1->right = k2->left;
-        k2->left = k1;
-        k1->height = std::max(height(k1->left), height(k1->right)) + 1;
-        k2->height = std::max(height(k2->right), k1->height) + 1;
-        k1 = k2;
-    }
-
-    void doubleWithLeftChild(AvlNode*& k3) {
-        rotateWithRightChild(k3->left);
-        rotateWithLeftChild(k3);
-    }
-
-    void doubleWithRightChild(AvlNode*& k1) {
-        rotateWithLeftChild(k1->right);
-        rotateWithRightChild(k1);
-    }
-
-    int height(AvlNode* t) const {
-        return t == nullptr ? -1 : t->height;
-    }
-
-    void makeEmpty(AvlNode*& t) {
-        if (t != nullptr) {
-            makeEmpty(t->left);
-            makeEmpty(t->right);
-            delete t;
-        }
-        t = nullptr;
-    }
-
-    AvlNode* findMin(AvlNode* t) const {
-        if (t == nullptr)
-            return nullptr;
-        if (t->left == nullptr)
-            return t;
-        return findMin(t->left);
-    }
-
-    AvlNode* findMax(AvlNode* t) const {
-        if (t != nullptr)
-            while (t->right != nullptr)
-                t = t->right;
-        return t;
-    }
-
-    int getSize(AvlNode* t) const {
-        if (t == nullptr) return 0;
-        return 1 + getSize(t->left) + getSize(t->right);
-    }
 };
 
-#endif // MYAVLTREE_HPP
+
+#endif  // MYAVLTREE_HPP
