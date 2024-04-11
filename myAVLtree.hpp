@@ -4,6 +4,7 @@
 #include <algorithm> 
 #include <chrono>
 #include <iostream>
+#include <vector>
 
 template <typename T>
 class AvlTree {
@@ -50,6 +51,8 @@ public:
     int size() const {
         return getSize(root);
     }
+
+    void treeMedian(const std::vector<int> *instructions);
 
 private:
     void insert(const T& x, AvlNode*& t) {
