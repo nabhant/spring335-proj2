@@ -55,10 +55,10 @@ void treeMedian(const std::vector<int> *instructions) {
 
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> duration = end - start;
-
+    std::cout << "Tree duration: " << duration.count() << "ms\n";
     for (int median : medians) {
         std::cout << median << " ";
     }
     std::cout << std::endl;
-    std::cout << "Tree duration: " << duration.count() << "ms\n";
+    
 }
